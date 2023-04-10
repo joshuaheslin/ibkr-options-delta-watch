@@ -6,3 +6,5 @@ generated/*
 # .tfstate files
 *.tfstate
 *.tfstate.*
+
+*.tfvars
