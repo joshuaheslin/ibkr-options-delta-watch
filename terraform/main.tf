@@ -1,11 +1,10 @@
 provider "google" {
   project = "playground-projects-99323"
   region  = "europe-west1"
-  version = "~> 3.18"
 }
 
 resource "google_storage_bucket" "bucket" {
-  name = "${variables.app_name}-cloud-function-bucket" # This bucket name must be unique
+  name = "${var.app_name}-cloud-function-bucket" # This bucket name must be unique
 }
 
 data "archive_file" "src" {
@@ -21,7 +20,7 @@ resource "google_storage_bucket_object" "archive" {
 }
 
 resource "google_cloudfunctions_function" "function" {
-  name        = "${variables.app_name}-scheduled-cloud-function"
+  name        = "${var.app_name}-scheduled-cloud-function"
   description = "An example Cloud Function that is triggered by a Cloud Schedule."
   runtime     = "go120"
 
@@ -46,7 +45,7 @@ resource "google_cloudfunctions_function" "function" {
 # }
 
 resource "google_service_account" "service_account" {
-  account_id   = "${variables.app_name}-cloud-function-invoker"
+  account_id   = "${var.app_name}-invoker-sa"
   display_name = "Cloud Function Tutorial Invoker Service Account"
 }
 
@@ -61,7 +60,7 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
 
 
 resource "google_cloud_scheduler_job" "job" {
-  name             = "${variables.app_name}-cloud-function-tutorial-scheduler"
+  name             = "${var.app_name}-cloud-function-tutorial-scheduler"
   description      = "Trigger the ${google_cloudfunctions_function.function.name} Cloud Function every 10 mins."
   schedule         = "*/5 * * * *" # Every 10 mins
   time_zone        = "Europe/Dublin"
