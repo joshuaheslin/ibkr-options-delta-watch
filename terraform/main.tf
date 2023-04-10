@@ -9,14 +9,14 @@ resource "google_storage_bucket" "bucket" {
 
 data "archive_file" "src" {
   type        = "zip"
-  source_dir  = "${path.root}/../src" # Directory where your Python source code is
-  output_path = "${path.root}/../generated/src.zip"
+  source_dir  = "${path.root}/../myfunction" # Directory where your Python source code is
+  output_path = "${path.root}/../generated/myfunction.zip"
 }
 
 resource "google_storage_bucket_object" "archive" {
   name   = "${data.archive_file.src.output_md5}.zip"
   bucket = google_storage_bucket.bucket.name
-  source = "${path.root}/../generated/src.zip"
+  source = "${path.root}/../generated/myfunction.zip"
 }
 
 resource "google_cloudfunctions_function" "function" {
@@ -26,6 +26,8 @@ resource "google_cloudfunctions_function" "function" {
 
   environment_variables = {
     FOO = "bar",
+    OPENAI_API_KEY = var.open_ai_api_key,
+    TWITTER_API_KEY = var.twitter_api_key,
   }
 
   available_memory_mb   = 128
