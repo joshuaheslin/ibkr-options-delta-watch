@@ -10,3 +10,5 @@ generated/*
 *.tfvars
 
 .DS_Store
+
+.env

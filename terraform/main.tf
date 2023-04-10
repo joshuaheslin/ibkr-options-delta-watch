@@ -64,7 +64,7 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
 resource "google_cloud_scheduler_job" "job" {
   name             = "${var.app_name}-cloud-function-tutorial-scheduler"
   description      = "Trigger the ${google_cloudfunctions_function.function.name} Cloud Function every 10 mins."
-  schedule         = "*/5 * * * *" # Every 10 mins
+  schedule         = "0 0 * * *"
   time_zone        = "Europe/Dublin"
   attempt_deadline = "320s"
 
