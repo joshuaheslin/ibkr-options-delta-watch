@@ -1,7 +1,6 @@
 # twitter-poster
 
-This is the companion repo to my blog post about using Terraform to create a scheduled Google Cloud Function https://diarmuid.ie/blog/setting-up-a-recurring-google-cloud-function-with-terraform
-
+Automatically make a tweet from content generated from OpenAI
 
 ## Setup
 
@@ -10,3 +9,13 @@ cd teraform/
 terraform init
 terrafrom apply
 ```
+
+## Run code
+
+Develop the code in `myfunction` module and test it.
+
+```bash
+go run main.go
+```
+
+The GCP CloudFunction will take care of the rest every 2 days :D
