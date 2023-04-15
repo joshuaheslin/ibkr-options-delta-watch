@@ -13,4 +13,4 @@ generated/*
 
 .env
 
-myfunction/vendor/*
+myfunction/vendor
