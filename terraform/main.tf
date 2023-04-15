@@ -1,3 +1,14 @@
+
+resource "google_storage_bucket" "default" {
+  name          = "${var.app_name}-bucket-tfstate"
+  force_destroy = false
+  location      = "US"
+  storage_class = "STANDARD"
+  versioning {
+    enabled = true
+  }
+}
+
 provider "google" {
   project = "playground-projects-99323"
   region  = "europe-west1"
