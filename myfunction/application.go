@@ -36,7 +36,7 @@ func GenerateTweet(name string) string {
 		context.Background(),
 		openai.ChatCompletionRequest{
 			Model:       openai.GPT3Dot5Turbo,
-			Temperature: 1,
+			Temperature: 0.8,
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleUser,
@@ -70,7 +70,7 @@ func MakeFormTrackersPost() {
 }
 
 func MakeEasyStoryPost() {
-	tweet := GenerateTweet("generates bedtime stories for children. Put your kids to sleep. #bedtime #stories #parents")
+	tweet := GenerateTweet("generates bedtime stories for children. Put your kids to sleep. Use Emojis. Don't use \"Say goodbye\" words. #bedtime #stories #parents")
 	fmt.Println(tweet)
 }
 
