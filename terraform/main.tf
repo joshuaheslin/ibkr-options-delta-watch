@@ -1,3 +1,9 @@
+terraform {
+  backend "gcs" {
+    bucket = "twitter-poster2-bucket-tfstate"
+    prefix = "terraform/state"
+  }
+}
 
 resource "google_storage_bucket" "default" {
   name          = "${var.app_name}-bucket-tfstate"
