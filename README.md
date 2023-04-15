@@ -2,14 +2,6 @@
 
 Automatically make a tweet from content generated from OpenAI
 
-## Setup
-
-```bash
-cd teraform/
-terraform init
-terrafrom apply
-```
-
 ## Run code
 
 Develop the code in `myfunction` module and test it.
