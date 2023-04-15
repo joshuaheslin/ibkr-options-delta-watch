@@ -4,7 +4,8 @@ provider "google" {
 }
 
 resource "google_storage_bucket" "bucket" {
-  name = "${var.app_name}-cloud-function-bucket" # This bucket name must be unique
+  name     = "${var.app_name}-cloud-function-bucket" # This bucket name must be unique
+  location = "us"
 }
 
 data "archive_file" "src" {
