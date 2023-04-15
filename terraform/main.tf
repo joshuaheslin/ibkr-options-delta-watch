@@ -9,14 +9,14 @@ resource "google_storage_bucket" "bucket" {
 
 data "archive_file" "src" {
   type        = "zip"
-  source_dir  = "${path.root}/../myfunction" # Directory where your Python source code is
-  output_path = "${path.root}/../generated/myfunction.zip"
+  source_dir  = "${path.root}/../." # Directory where your Python source code is
+  output_path = "${path.root}/../generated/workspace.zip"
 }
 
 resource "google_storage_bucket_object" "archive" {
   name   = "${data.archive_file.src.output_md5}.zip"
   bucket = google_storage_bucket.bucket.name
-  source = "${path.root}/../generated/myfunction.zip"
+  source = "${path.root}/../generated/workspace.zip"
 }
 
 resource "google_cloudfunctions_function" "function" {
@@ -25,16 +25,19 @@ resource "google_cloudfunctions_function" "function" {
   runtime     = "go120"
 
   environment_variables = {
-    FOO = "bar",
-    OPENAI_API_KEY = var.open_ai_api_key,
-    TWITTER_API_KEY = var.twitter_api_key,
+    FOO                         = "bar",
+    OPENAI_API_KEY              = var.open_ai_api_key,
+    TWITTER_ACCESS_TOKEN        = var.twitter_access_token,
+    TWITTER_ACCESS_TOKEN_SECRET = var.twitter_access_token_secret,
+    CONSUMER_KEY                = var.twitter_consumer_key,
+    CONSUMER_SECRET             = var.twitter_consumer_secret,
   }
 
   available_memory_mb   = 128
   source_archive_bucket = google_storage_bucket.bucket.name
   source_archive_object = google_storage_bucket_object.archive.name
   trigger_http          = true
-  entry_point           = "Handler" # This is the name of the function that will be executed in your Python code
+  entry_point           = "myfunction.Handler" # This is the name of the function that will be executed in your Python code
 }
 
 # resource "google_cloudfunctions_function_iam_member" "invoker" {
@@ -64,7 +67,7 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
 resource "google_cloud_scheduler_job" "job" {
   name             = "${var.app_name}-cloud-function-tutorial-scheduler"
   description      = "Trigger the ${google_cloudfunctions_function.function.name} Cloud Function every 10 mins."
-  schedule         = "0 0 * * *"
+  schedule         = "0 0 */3 * *" # every 3 days
   time_zone        = "Europe/Dublin"
   attempt_deadline = "320s"
 
