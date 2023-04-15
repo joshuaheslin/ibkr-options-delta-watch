@@ -70,7 +70,7 @@ func MakeFormTrackersPost() {
 }
 
 func MakeEasyStoryPost() {
-	tweet := GenerateTweet("generates bedtime stories for children. It helps parents put their kids to sleep. #bedtime #stories #parents")
+	tweet := GenerateTweet("generates bedtime stories for children. Put your kids to sleep. #bedtime #stories #parents")
 	fmt.Println(tweet)
 }
 
