@@ -7,5 +7,5 @@ import (
 
 func Handler(w http.ResponseWriter, r *http.Request) {
 	MakePost()
-	fmt.Fprintf(w, "Posting done!!")
+	fmt.Fprintf(w, "Posting done!!!")
 }
