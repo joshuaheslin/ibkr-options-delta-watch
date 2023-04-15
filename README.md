@@ -22,6 +22,8 @@ go run main.go
 
 Deployment will use local `terraform.tfvars` (remember to copy over from .env)
 
+`vendor` dir must be in myfunction in favour or go.mod (GCP functions requirement for improved cold starts)
+
 ```bash
 bash deploy.sh
 ```
