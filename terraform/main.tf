@@ -9,7 +9,7 @@ resource "google_storage_bucket" "bucket" {
 
 data "archive_file" "src" {
   type        = "zip"
-  source_dir  = "${path.root}/../." # Directory where your Python source code is
+  source_dir  = "${path.root}/../myfunction" # Directory where your Python source code is
   output_path = "${path.root}/../generated/workspace.zip"
 }
 
@@ -37,7 +37,7 @@ resource "google_cloudfunctions_function" "function" {
   source_archive_bucket = google_storage_bucket.bucket.name
   source_archive_object = google_storage_bucket_object.archive.name
   trigger_http          = true
-  entry_point           = "myfunction.Handler" # This is the name of the function that will be executed in your Python code
+  entry_point           = "Handler" # This is the name of the function that will be executed in your code
 }
 
 # resource "google_cloudfunctions_function_iam_member" "invoker" {
@@ -65,9 +65,10 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
 
 
 resource "google_cloud_scheduler_job" "job" {
-  name             = "${var.app_name}-cloud-function-tutorial-scheduler"
-  description      = "Trigger the ${google_cloudfunctions_function.function.name} Cloud Function every 10 mins."
-  schedule         = "0 0 */3 * *" # every 3 days
+  name        = "${var.app_name}-cloud-fn-scheduler"
+  description = "Trigger the ${google_cloudfunctions_function.function.name} Cloud Function every 10 mins."
+  # schedule         = "0 0 */3 * *" # every 3 days
+  schedule         = "*/5 * * * *" # every 5 mins
   time_zone        = "Europe/Dublin"
   attempt_deadline = "320s"
 

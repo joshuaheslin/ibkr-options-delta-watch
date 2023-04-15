@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dghubble/oauth1"
+	oauth1 "github.com/dghubble/oauth1"
 	openai "github.com/sashabaranov/go-openai"
 )
 

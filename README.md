@@ -18,4 +18,12 @@ Develop the code in `myfunction` module and test it.
 go run main.go
 ```
 
+## Deploy code
+
+Deployment will use local `terraform.tfvars` (remember to copy over from .env)
+
+```bash
+bash deploy.sh
+```
+
 The GCP CloudFunction will take care of the rest every 2 days :D
