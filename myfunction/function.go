@@ -6,6 +6,6 @@ import (
 )
 
 func Handler(w http.ResponseWriter, r *http.Request) {
-	MakePost()
+	Run()
 	fmt.Fprintf(w, "Posting done!!!")
 }

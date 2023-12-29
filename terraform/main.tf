@@ -1,6 +1,6 @@
 terraform {
   backend "gcs" {
-    bucket = "twitter-poster2-bucket-tfstate"
+    bucket = "delta-watch-bucket-tfstate"
     prefix = "terraform/state"
   }
 }
@@ -27,7 +27,7 @@ resource "google_storage_bucket" "bucket" {
 
 data "archive_file" "src" {
   type        = "zip"
-  source_dir  = "${path.root}/../myfunction" # Directory where your Python source code is
+  source_dir  = "${path.root}/../myfunction" # Directory where your source code is
   output_path = "${path.root}/../generated/workspace.zip"
 }
 
@@ -43,12 +43,9 @@ resource "google_cloudfunctions_function" "function" {
   runtime     = "go120"
 
   environment_variables = {
-    FOO                         = "bar",
-    OPENAI_API_KEY              = var.open_ai_api_key,
-    TWITTER_ACCESS_TOKEN        = var.twitter_access_token,
-    TWITTER_ACCESS_TOKEN_SECRET = var.twitter_access_token_secret,
-    CONSUMER_KEY                = var.twitter_consumer_key,
-    CONSUMER_SECRET             = var.twitter_consumer_secret,
+    FOO                 = "bar",
+    MARKET_DATA_API_KEY = var.market_data_api_key,
+    GMAIL_PASSWORD      = var.gmail_password,
   }
 
   available_memory_mb   = 128
@@ -85,8 +82,8 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
 resource "google_cloud_scheduler_job" "job" {
   name        = "${var.app_name}-cloud-fn-scheduler"
   description = "Trigger the ${google_cloudfunctions_function.function.name} Cloud Function every 10 mins."
-  schedule    = "0 0 */15 * *" # every 15 days
-  # schedule         = "*/5 * * * *" # every 5 mins
+  # schedule    = "0 0 */15 * *" # every 15 days
+  schedule         = "*/5 * * * *" # every 5 mins
   time_zone        = "Europe/Dublin"
   attempt_deadline = "320s"
 

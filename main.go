@@ -16,9 +16,7 @@ func main() {
 		log.Fatalf("Error loading environment variables file")
 	}
 
-	fmt.Println(os.Getenv("FOO"))
-	fmt.Println(os.Getenv("OPENAI_API_KEY"))
-	fmt.Println(os.Getenv("TWITTER_API_KEY"))
+	fmt.Println(os.Getenv("MARKET_DATA_API_KEY"))
 
-	myfunction.MakePost()
+	myfunction.Run()
 }

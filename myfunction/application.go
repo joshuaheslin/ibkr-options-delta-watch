@@ -1,86 +1,156 @@
 package myfunction
 
 import (
-	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+	"net/smtp"
 	"os"
-
-	oauth1 "github.com/dghubble/oauth1"
-	openai "github.com/sashabaranov/go-openai"
 )
 
-func postTweet(text string) {
-	config := oauth1.NewConfig(os.Getenv("CONSUMER_KEY"), os.Getenv("CONSUMER_SECRET"))
-	token := oauth1.NewToken(os.Getenv("TWITTER_ACCESS_TOKEN"), os.Getenv("TWITTER_ACCESS_TOKEN_SECRET"))
-	// http.Client will automatically authorize Requests
-	httpClient := config.Client(oauth1.NoContext, token)
+func sendMail(body string) {
+	from := "joshua.heslin@gmail.com"
+	pass := os.Getenv("GMAIL_PASSWORD")
+	to := "jbmh@me.com"
 
-	postBody, _ := json.Marshal(map[string]string{
-		"text": text,
-	})
-	responseBody := bytes.NewBuffer(postBody)
+	msg := "From: " + from + "\n" +
+		"To: " + to + "\n" +
+		"Subject: Option Alert\n\n" +
+		body
 
-	resp, err := httpClient.Post("https://api.twitter.com/2/tweets", "application/json", responseBody)
-
-	fmt.Println(resp)
-	fmt.Println(err)
-}
-
-func GenerateTweet(name string) string {
-	prompt := fmt.Sprintf("Generate a tweet for a software app that %s. Ensure to include trending hashtags.", name)
-
-	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
-	resp, err := client.CreateChatCompletion(
-		context.Background(),
-		openai.ChatCompletionRequest{
-			Model:       openai.GPT3Dot5Turbo,
-			Temperature: 0.8,
-			Messages: []openai.ChatCompletionMessage{
-				{
-					Role:    openai.ChatMessageRoleUser,
-					Content: prompt,
-				},
-			},
-		},
-	)
+	err := smtp.SendMail("smtp.gmail.com:587",
+		smtp.PlainAuth("", from, pass, "smtp.gmail.com"),
+		from, []string{to}, []byte(msg))
 
 	if err != nil {
-		fmt.Printf("ChatCompletion error: %v\n", err)
-		os.Exit(1)
+		log.Printf("smtp error: %s", err)
+		return
 	}
 
-	postTweet(resp.Choices[0].Message.Content)
-	return resp.Choices[0].Message.Content
+	log.Println("Successfully sended to " + to)
 }
 
-func MakeAudioTourPost() {
-	tweet := GenerateTweet("is a website that creates online audio tours using QRcodes")
-
-	fmt.Println(tweet)
+type OptionSymbolQuote struct {
+	Status          string    `json:"s"`
+	OptionSymbol    []string  `json:"optionSymbol"`
+	Underlying      []string  `json:"underlying"`
+	UnderlyingPrice []float64 `json:"underlyingPrice"`
+	Expiration      []int     `json:"expiration"`
+	DTE             []int     `json:"dte"`
+	Updated         []int     `json:"updated"`
+	Mid             []float64 `json:"mid"`
+	Delta           []float64 `json:"delta"`
 }
 
-func MakeFormTrackersPost() {
-	tweet := GenerateTweet("makes it easy to see what customers are typing into your website form before they submit.' #webflow, #wordpress #form #website")
+func FetchSymbol(symbol string) (OptionSymbolQuote, error) {
+	apiKey := os.Getenv("MARKET_DATA_API_KEY")
+	URL := fmt.Sprintf("https://api.marketdata.app/v1/options/quotes/%s?format=json&token=%s", symbol, apiKey)
 
-	// easystory_me
+	// fmt.Println(URL)
 
-	fmt.Println(tweet)
+	resp, err := http.Get(URL)
+	if err != nil {
+		fmt.Println(fmt.Errorf("ooopsss an error occurred, please try again, %s", err))
+	}
+	defer resp.Body.Close()
+
+	var result OptionSymbolQuote
+
+	//Decode the data
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		fmt.Println(fmt.Errorf("ooopsss! an error occurred, please try again, %s", err))
+	}
+
+	return result, nil
 }
 
-func MakeEasyStoryPost() {
-	tweet := GenerateTweet("generates bedtime stories for children. Put your kids to sleep. Don't use Emojis. Don't use \"Say goodbye\" words. Use the link easystory.me. #bedtime #stories #parents #children")
-	fmt.Println(tweet)
+func RunSymbol(optionSymbol OptionSymbol) {
+	result, err := FetchSymbol(optionSymbol.Symbol)
+	if err != nil {
+		fmt.Printf("could not fetch symbol %v", err)
+	}
+
+	if result.Status != "ok" {
+		fmt.Println(optionSymbol.Symbol, result, err)
+		return
+	}
+
+	underlyingPrice := result.UnderlyingPrice[0]
+	dte := result.DTE[0]
+	delta := result.Delta[0]
+	underlying := result.Underlying[0]
+
+	message := ""
+	sendAlert := false
+	if delta < 0 {
+		if delta < -0.35 {
+			message = fmt.Sprintf("Delta is too high: %f", delta)
+			sendAlert = true
+		}
+		if delta > -0.17 {
+			message = fmt.Sprintf("Delta is winning: %f", delta)
+			sendAlert = true
+		}
+	} else if delta > 0 {
+		if delta > 0.35 {
+			message = fmt.Sprintf("Delta is too high: %f", delta)
+			sendAlert = true
+		}
+		if delta < 0.17 {
+			message = fmt.Sprintf("Delta is winning: %f", delta)
+			sendAlert = true
+		}
+	}
+
+	optionDetail := fmt.Sprintf("%s %f dte:%d delta:%f", underlying, underlyingPrice, dte, delta)
+
+	if !sendAlert {
+		msg := fmt.Sprintf("%s Delta is ok %f. %s", optionSymbol.Symbol, delta, optionDetail)
+		fmt.Println(msg)
+		// sendMail(msg)
+		return
+	}
+
+	emailMessage := fmt.Sprintf(`
+	Alert: 
+	%s
+
+	Option: 
+	%s
+
+	Details:
+	%s
+	`, message, optionSymbol.Symbol, optionDetail)
+
+	fmt.Println(emailMessage)
+	sendMail(emailMessage)
 }
 
-func MakePost() {
-	fmt.Println("Making posts...")
-	// MakeTweet()
+type OptionSymbol struct {
+	Symbol string
+}
 
-	// MakeAudioTourPost()
-	MakeEasyStoryPost()
-	// MakeFormTrackersPost()
+func Run() {
+	fmt.Println("Fetching deltas...")
+
+	// TODO: find a way to fetch from GSheets Spreadsheet tracker later.
+
+	symbols := []OptionSymbol{{
+		Symbol: "SPY240126P00465000",
+	}, {
+		Symbol: "IWM240126P00195000",
+	}, {
+		Symbol: "SPY240216C00492000",
+	}, {
+		Symbol: "SPY240202C00490000",
+	}, {
+		Symbol: "IWM240216C00215000",
+	}}
+
+	for _, symbol := range symbols {
+		RunSymbol(symbol)
+	}
 
 	fmt.Println("Done!")
 }
