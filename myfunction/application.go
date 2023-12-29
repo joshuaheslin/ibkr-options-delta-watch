@@ -43,7 +43,7 @@ type OptionSymbolQuote struct {
 	Delta           []float64 `json:"delta"`
 }
 
-func FetchSymbol(symbol string) (OptionSymbolQuote, error) {
+func fetchSymbol(symbol string) (OptionSymbolQuote, error) {
 	apiKey := os.Getenv("MARKET_DATA_API_KEY")
 	URL := fmt.Sprintf("https://api.marketdata.app/v1/options/quotes/%s?format=json&token=%s", symbol, apiKey)
 
@@ -65,8 +65,8 @@ func FetchSymbol(symbol string) (OptionSymbolQuote, error) {
 	return result, nil
 }
 
-func RunSymbol(optionSymbol OptionSymbol) {
-	result, err := FetchSymbol(optionSymbol.Symbol)
+func runSymbol(optionSymbol OptionSymbol) {
+	result, err := fetchSymbol(optionSymbol.Symbol)
 	if err != nil {
 		fmt.Printf("could not fetch symbol %v", err)
 	}
@@ -128,7 +128,7 @@ Details:
 `, message, optionSymbol.InitialDelta, optionSymbol.InitialPremium, optionSymbol.Symbol, optionDetail)
 
 	fmt.Println(emailMessage)
-	// sendMail(emailMessage)
+	sendMail(emailMessage)
 }
 
 type OptionSymbol struct {
@@ -161,7 +161,7 @@ func Run() {
 	}}
 
 	for _, symbol := range symbols {
-		RunSymbol(symbol)
+		runSymbol(symbol)
 	}
 
 	fmt.Println("Done!")
