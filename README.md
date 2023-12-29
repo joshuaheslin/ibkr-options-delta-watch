@@ -1,6 +1,8 @@
-# twitter-poster
+# IBKR-delta-tracker
 
-Automatically make a tweet from content generated from OpenAI
+Automatically track delta for optionSymbols by marketData API KEY.
+
+# How to run
 
 ## Run code
 
@@ -20,4 +22,8 @@ Deployment will use local `terraform.tfvars` (remember to copy over from .env)
 bash deploy.sh
 ```
 
-The GCP CloudFunction will take care of the rest every 2 days :D
+The GCP CloudFunction will take care of the rest every x days :D
+
+# Improvements
+
+- Connect with google sheets so we can take the OptionSymbol source for a list.
