@@ -80,6 +80,7 @@ func RunSymbol(optionSymbol OptionSymbol) {
 	dte := result.DTE[0]
 	delta := result.Delta[0]
 	underlying := result.Underlying[0]
+	mid := result.Mid[0]
 
 	message := ""
 	sendAlert := false
@@ -103,7 +104,7 @@ func RunSymbol(optionSymbol OptionSymbol) {
 		}
 	}
 
-	optionDetail := fmt.Sprintf("%s %f dte:%d delta:%f", underlying, underlyingPrice, dte, delta)
+	optionDetail := fmt.Sprintf("%s %f dte:%d delta:%f mid:%f", underlying, underlyingPrice, dte, delta, mid)
 
 	if !sendAlert {
 		msg := fmt.Sprintf("%s Delta is ok %f. %s", optionSymbol.Symbol, delta, optionDetail)
@@ -113,22 +114,27 @@ func RunSymbol(optionSymbol OptionSymbol) {
 	}
 
 	emailMessage := fmt.Sprintf(`
-	Alert: 
-	%s
+Alert: 
+%s
 
-	Option: 
-	%s
+(Initial delta: %s)
+(Initial Premium: %s)
 
-	Details:
-	%s
-	`, message, optionSymbol.Symbol, optionDetail)
+Option: 
+%s
+
+Details:
+%s
+`, message, optionSymbol.InitialDelta, optionSymbol.InitialPremium, optionSymbol.Symbol, optionDetail)
 
 	fmt.Println(emailMessage)
-	sendMail(emailMessage)
+	// sendMail(emailMessage)
 }
 
 type OptionSymbol struct {
-	Symbol string
+	Symbol         string
+	InitialDelta   string
+	InitialPremium string
 }
 
 func Run() {
@@ -137,15 +143,21 @@ func Run() {
 	// TODO: find a way to fetch from GSheets Spreadsheet tracker later.
 
 	symbols := []OptionSymbol{{
-		Symbol: "SPY240126P00465000",
+		Symbol:         "SPY240126P00465000",
+		InitialDelta:   "0.24",
+		InitialPremium: "0.95",
 	}, {
-		Symbol: "IWM240126P00195000",
+		Symbol:         "IWM240126P00195000",
+		InitialDelta:   "0.25",
+		InitialPremium: "1.26",
 	}, {
-		Symbol: "SPY240216C00492000",
+		Symbol:         "SPY240216C00492000",
+		InitialDelta:   "0.25",
+		InitialPremium: "0.64",
 	}, {
-		Symbol: "SPY240202C00490000",
-	}, {
-		Symbol: "IWM240216C00215000",
+		Symbol:         "SPY240202C00490000",
+		InitialDelta:   "0.23",
+		InitialPremium: "0.96",
 	}}
 
 	for _, symbol := range symbols {
